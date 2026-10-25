@@ -5,6 +5,8 @@ build
 data
 coverage
 *.tsbuildinfo
+.open-next
+.wrangler
 
 .env
 .env.*

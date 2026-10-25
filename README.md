@@ -2,6 +2,8 @@
 
 一个从零实现的 RAG（检索增强生成）应用：文档上传 → 分块 → 混合检索（BM25 + 向量 + RRF 融合）→ 带引用的流式回答。**不配置任何 API Key 也能完整运行**（本地词项检索 + 摘要式回答），配置后自动升级为向量混合检索与 LLM 引用式回答。
 
+**🚀 线上 Demo**：<https://rag-knowledge-base.qixin-study.workers.dev>（左侧粘贴文本入库后直接提问，零配置可完整体验检索与引用链路）
+
 ![screenshot](docs/screenshot-qa.png)
 
 > 与 [Agent Workbench](https://github.com/rwzdk/agent-workbench)（工具调用型 Agent）互补：那个项目讲全栈工程广度（认证/CRUD/流式/工具编排），本项目讲 **检索与 RAG 的深度**（分块策略、混合检索、排序融合、检索质量评估）。两者组成"AI 应用开发"的完整作品集。
@@ -90,12 +92,22 @@ npm run eval
 
 在 6 篇中文标注语料 × 6 个问题上运行本地检索，输出每题命中情况并断言 **hit@3 ≥ 0.83、MRR ≥ 0.78**。调整分块参数或 BM25 的 k1/b 后跑一遍，指标退化就会挡在 CI——这是"改了参数心里有底"的依据。
 
+## 部署
+
+- **Cloudflare Workers（当前线上方案）**：OpenNext 适配 + Cloudflare D1 数据库。数据库层做了双实现（`src/lib/db.ts`：D1 / libSQL 同一接口），一条命令部署：
+  ```bash
+  npx wrangler d1 create rag-knowledge-base   # 把返回的 database_id 填入 wrangler.jsonc
+  npm run deploy
+  ```
+- **Node 自托管**：`npm run build && npm start`，本地 SQLite 文件即可工作。
+
 ## 简历可以这样写（示例）
 
 - 从零实现 RAG 知识库问答系统：文档分块（段落聚合 + overlap）、BM25 + 向量混合检索、RRF 排序融合、带引用溯源的流式回答，检索与生成全链路零外部服务依赖、可离线运行
 - 无词典场景下实现中文 bigram 分词与 Lucene 风格 IDF 的 BM25（纯函数实现），并通过 RRF 与向量检索融合，兼顾关键词精确匹配与语义召回
 - 建立检索质量评估基线（hit@3 / MRR 标注集），纳入 CI 门禁，使分块与检索参数调整可量化验证
 - 基于 AI SDK 数据流协议自定义数据分片，将检索来源随回答流式下发，前端实时渲染引用卡片
+- 部署至 Cloudflare Workers（OpenNext 适配 + D1 数据库），数据库层实现 D1 / libSQL 双后端统一接口，本地与云端同一套业务代码
 
 ## Roadmap
 

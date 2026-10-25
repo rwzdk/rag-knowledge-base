@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db, ensureSchema } from '@/lib/db';
+import { ensureSchema, getDb } from '@/lib/db';
 import { chunkText } from '@/lib/chunker';
 import { embedTexts, getEmbeddingMode } from '@/lib/embeddings';
 
@@ -14,6 +14,7 @@ const schema = z.object({
 
 export async function GET() {
   await ensureSchema();
+  const db = await getDb();
   const rs = await db.execute({
     sql: 'SELECT id, title, char_count, chunk_count, embedding_model, created_at FROM documents ORDER BY id DESC',
     args: [],
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
   }
 
   await ensureSchema();
+  const db = await getDb();
   const embeddingModel = embeddings && mode.kind === 'remote' ? mode.model : null;
   const embeddingDimension = embeddings && mode.kind === 'remote' ? mode.dimension : null;
   const rs = await db.execute({

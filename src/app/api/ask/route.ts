@@ -1,6 +1,6 @@
 import { createDataStreamResponse, formatDataStreamPart, streamText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { db, ensureSchema } from '@/lib/db';
+import { ensureSchema, getDb } from '@/lib/db';
 import { tokenize } from '@/lib/tokenize';
 import { bm25 } from '@/lib/bm25';
 import { cosineSimilarity, rrfFuse } from '@/lib/retriever';
@@ -25,6 +25,7 @@ type ChunkRow = {
 
 async function loadChunks(): Promise<ChunkRow[]> {
   await ensureSchema();
+  const db = await getDb();
   const rs = await db.execute({
     sql: `SELECT c.id AS chunk_id, c.document_id AS document_id, c.content AS content,
                  c.embedding AS embedding, d.title AS title
