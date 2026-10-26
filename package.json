@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "eval": "vitest run src/tests/rag-eval.test.ts",
+    "eval:judge": "vitest run src/tests/judge.eval.test.ts",
     "preview": "opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },

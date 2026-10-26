@@ -25,7 +25,7 @@
 
 | 层 | 选型 |
 | --- | --- |
-| 前端 | Next.js 14 (App Router) · React 18 · TypeScript · Tailwind CSS |
+| 前端 | Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS |
 | LLM / 嵌入 | Vercel AI SDK v4（`streamText` / `embedMany` / 自定义数据分片下发来源） |
 | 检索 | 自研：BM25 + bigram 中文分词 + 余弦相似度 + RRF 融合（零外部检索依赖） |
 | 数据库 | SQLite（libSQL client；向量以 JSON 存储，纯 JS 计算余弦，规模大可平滑迁移 sqlite-vec / Turso Vector） |
@@ -92,6 +92,14 @@ npm run eval
 
 在 6 篇中文标注语料 × 6 个问题上运行本地检索，输出每题命中情况并断言 **hit@3 ≥ 0.83、MRR ≥ 0.78**。调整分块参数或 BM25 的 k1/b 后跑一遍，指标退化就会挡在 CI——这是"改了参数心里有底"的依据。
 
+### LLM-as-judge 答案质量评估
+
+```bash
+npm run eval:judge
+```
+
+检索质量只回答"找没找到"，`src/lib/judge.ts` 再补上"答得好不好"：**faithfulness**（答案断言被检索资料支撑的比例，0~1）与 **relevancy**（切题程度，0/1/2）由 LLM 评审打分，评审调用以函数注入（离线确定性测试），未配置 Key 时端到端评估自动跳过（CI 无凭据亦安全）。检索评估 + 答案评估 + CI 门禁，构成完整的质量体系。
+
 ## 部署
 
 - **Cloudflare Workers（当前线上方案）**：OpenNext 适配 + Cloudflare D1 数据库。数据库层做了双实现（`src/lib/db.ts`：D1 / libSQL 同一接口），一条命令部署：
@@ -111,6 +119,7 @@ npm run eval
 
 ## Roadmap
 
+- [x] LLM-as-judge 答案质量评估（faithfulness / relevancy，`npm run eval:judge`，无 Key 自动跳过）
 - [ ] PDF / Word 解析入库
 - [ ] sqlite-vec 向量索引（分块规模上万时的升级路径）
 - [ ] 检索后 rerank（交叉编码器或 LLM rerank）
